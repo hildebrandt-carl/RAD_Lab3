@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 static struct etimer et;
+static int virtualClock;
 
 PROCESS(main_process, "Main Task");
 AUTOSTART_PROCESSES(&main_process);
@@ -16,17 +17,15 @@ PROCESS_THREAD(main_process, ev, data)
 
 	// Start the watchdog
 	WDTCTL = (WDTCTL_L&~(WDTHOLD))+ WDTPW;
-	 
-	TA1CTL |= TASSEL0;
+	
+	TA1CTL = TASSEL0 + TAIE + MC0;
 	//TA1CTL |= ~(ID0);
 	//TA1CTL |= ~(ID1);
-	TA1CTL |= TAIE;
-	TA1CTL |= MC0;
 
 	TA1CCR0 = 0x8000;
-	TA1CCTL0 |= CCIE;
-
-
+	TA1CCTL0 = CCIE;
+	
+	virtualClock = 0;
 	
 	while(1)
 	{
@@ -41,10 +40,11 @@ PROCESS_THREAD(main_process, ev, data)
 
 }
 
-#pragma vector = TIMER0_A0_VECTOR
-__interrupt void Timer0A0ISR(void)
+#pragma vector = TIMER1_A0_VECTOR
+__interrupt void Timer1A0ISR(void)
 {
-	printf("In the interrupt\r\n");
+	virtualClock++;
+	printf("In the interrupt, clock is %d\r\n", virtualClock);
 }
 
 
