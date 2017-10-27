@@ -20,10 +20,13 @@ PROCESS_THREAD(main_process, ev, data)
 	TA1CTL |= TASSEL0;
 	//TA1CTL |= ~(ID0);
 	//TA1CTL |= ~(ID1);
+	TA1CTL |= TAIE;
 	TA1CTL |= MC0;
 
 	TA1CCR0 = 0x8000;
 	TA1CCTL0 |= CCIE;
+
+
 	
 	while(1)
 	{
