@@ -1,6 +1,8 @@
 #include "header.h"
 #include <stdio.h>
 
+static struct etimer et;
+
 PROCESS(main_process, "Main Task");
 AUTOSTART_PROCESSES(&main_process);
 
@@ -27,8 +29,9 @@ PROCESS_THREAD(main_process, ev, data)
 	PMAPPWD = 0x02D52;
  	P2MAP3 = PM_SMCLK;
 
-	PMAPCTL |= PMAPRECFG; // make configuration actually get set?
-
+	PMAPCTL |= PMAPRECFG; // set configuration
+  	PMAPPWD = 0x00; // lock configuration
+	
 	while(1)
 	{
  		// Delay 1 second - start the event timer and set its event period to 1 second
