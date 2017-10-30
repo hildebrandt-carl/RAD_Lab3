@@ -13,14 +13,7 @@ PROCESS_THREAD(LED1,ev,data)
 	P1OUT ^= (1<<7); // toggle bit 7 in P1OUT (RED LED)
 	P1DIR |= (1<<7); // toggle bit 7 in P1DIR (RED LED)
 		
-	incrementCOUNTER(1);
-	int g = getCOUNTER(1);
-	if(g > 14)
-	{
-		setPROGRESS(1);
-		errorLogging("LED 1 Finished task");
-		clearCOUNTER(1);
-	}
+	setPROGRESS(1);
 	
 	process_start(&WDTCHECK, NULL);
 	PROCESS_END();
@@ -30,21 +23,11 @@ PROCESS_THREAD(LED1,ev,data)
 PROCESS_THREAD(LED2,ev,data)
 {
 	PROCESS_BEGIN();
-	
-	if(getCOUNTER(2) % 2 == 0)
-	{
-		P3OUT ^= (1<<7); // toggle bit 7 in P3OUT (YELLOW LED)
-		P3DIR |= (1<<7); // toggle bit 7 in P3DIR (YELLOW LED)
-	}
 
-	incrementCOUNTER(2);
-	int g = getCOUNTER(2);
-	if(g > 8)
-	{
-		setPROGRESS(2);
-		errorLogging("LED 2 Finished task");
-		clearCOUNTER(2);
-	}
+	P3OUT ^= (1<<7); // toggle bit 7 in P3OUT (YELLOW LED)
+	P3DIR |= (1<<7); // toggle bit 7 in P3DIR (YELLOW LED)
+
+	setPROGRESS(2);
 
 	process_start(&WDTCHECK, NULL);
 	PROCESS_END();
@@ -56,16 +39,9 @@ PROCESS_THREAD(LED3,ev,data)
 	PROCESS_BEGIN();
 
 	P3OUT ^= (1<<6); // toggle bit 6 in P3OUT (GREEN LED)
-	P3DIR |= (1<<6); // toggle bit 6 in P3DIR (GREEN LED)
-	
-	incrementCOUNTER(3);
-	int g = getCOUNTER(3);
-	if(g > 6)
-	{
-		setPROGRESS(3);
-		errorLogging("LED 3 Finished task");
-		clearCOUNTER(3);				
-	}
+	P3DIR |= (1<<6); // set bit 6 in P3DIR (GREEN LED)
+
+	setPROGRESS(3);			
 
 	process_start(&WDTCHECK, NULL);
 	PROCESS_END();
