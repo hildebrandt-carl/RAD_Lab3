@@ -77,15 +77,27 @@ PROCESS_THREAD(main_process, ev, data)
 		errorLogging(secondCounterStr);
 
 		// Call the different processes in tasks.c
-		if((count==0) || (count==1)){
+		// Changed the order of this when changing the boards (for coolness)
+		
+		if((count==0) || (count==1))
+		{
 			process_start(&LED1,NULL);
-		}else if((count==2) || (count==3)){
+		}
+		else if((count==2) || (count==3))
+		{
 			process_start(&LED2,NULL);
-		}else if((count==4) || (count==5)){
+		}
+		else if((count==4) || (count==5))
+		{
 			process_start(&LED3,NULL);
 		}
+
 		count++;
-		if(count==6){count = 0;}	
+
+		if(count==6)
+		{
+			count = 0;
+		}	
 	}
 	PROCESS_END();
 
