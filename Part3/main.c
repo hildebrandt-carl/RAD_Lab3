@@ -3,9 +3,6 @@
 
 // Counters to keep track of task progress
 static uint16_t count=0;
-static uint8_t blinkcounter1=0;
-static uint8_t blinkcounter2=0;
-static uint8_t blinkcounter3=0;
 
 // Other variables
 static uint8_t PROGRESS=0;
@@ -18,63 +15,6 @@ AUTOSTART_PROCESSES(&main_process);
 void errorLogging(char* str)
 {
 	printf("Status Log: %s\r\n",str);
-}
-
-// Increments the blink counter relating to the passed integer
-void incrementCOUNTER(uint8_t i)
-{
-	switch(i)   
-	{  
-		case 1:  
-			blinkcounter1++;
-			break;
-		case 2:  
-			blinkcounter2++;
-			break; 
-		case 3:  
-			blinkcounter3++;
-			break;
-		default :  
-			errorLogging("ERROR! Invalid input to incrementCOUNTER function");  
-			break;
-	}
-}
-
-// Returns the value of the blink counter relating to the passed integer
-uint8_t getCOUNTER(uint8_t i)
-{
-	switch(i)   
-	{  
-		case 1:  
-			return(blinkcounter1);  
-		case 2:  
-			return(blinkcounter2);  
-		case 3: 
-			return(blinkcounter3);
-		default :  
-			errorLogging("ERROR! Invalid input to getCOUNTER function");
-			return 0;
-	}
-}
-
-
-// Clears the blink counter relating to the passed integer
-void clearCOUNTER(uint8_t i)
-{
-	switch(i)   
-	{  
-		case 1:  
-			blinkcounter1 = 0;
-			break; 
-		case 2:  
-			blinkcounter2 = 0;
-			break;  
-		case 3: 
-			blinkcounter3 = 0;
-			break;
-		default :  
-			errorLogging("ERROR! Invalid input to clearCOUNTER function");
-	}	
 }
 
 // Returns the value of the progress variable
@@ -137,9 +77,15 @@ PROCESS_THREAD(main_process, ev, data)
 		errorLogging(secondCounterStr);
 
 		// Call the different processes in tasks.c
-		process_start(&LED1,NULL);
-		process_start(&LED2,NULL);
-		process_start(&LED3,NULL);	
+		if((count==0) || (count==1)){
+			process_start(&LED1,NULL);
+		}else if((count==2) || (count==3)){
+			process_start(&LED2,NULL);
+		}else if((count==4) || (count==5)){
+			process_start(&LED3,NULL);
+		}
+		count++;
+		if(count==6){count = 0;}	
 	}
 	PROCESS_END();
 
