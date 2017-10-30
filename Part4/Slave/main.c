@@ -65,6 +65,8 @@ PROCESS_THREAD(main_process, ev, data)
 	errorLogging("Starting up the system RAD_TEAM");
 	static int iCnt = 0;
 
+	rf1a_start_rx();
+
 	while(1)
 	{
  		// Delay 1 second - start the event timer and set its event period to 1 second
@@ -75,9 +77,7 @@ PROCESS_THREAD(main_process, ev, data)
 		iCnt++;	
 		char* secondCounterStr[50];
 		sprintf(secondCounterStr,"System has been running for %d seconds.",iCnt);
-		errorLogging(secondCounterStr);
-
-		rf1a_start_rx();
+		errorLogging(secondCounterStr);		
 
 		// Call the different processes in tasks.c
 		if((count==0) || (count==1))
