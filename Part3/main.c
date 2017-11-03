@@ -100,6 +100,5 @@ PROCESS_THREAD(main_process, ev, data)
 		}	
 	}
 	PROCESS_END();
-
 }
 

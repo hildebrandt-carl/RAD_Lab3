@@ -46,5 +46,3 @@ __interrupt void Timer1A0ISR(void)
 	virtualClock++;
 	printf("In the interrupt, clock is %d\r\n", virtualClock);
 }
-
-
