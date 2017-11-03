@@ -18,10 +18,6 @@ uint8_t getPROGRESS();
 void setPROGRESS(uint8_t);
 void clearPROGRESS();
 
-void incrementCOUNTER(uint8_t);
-uint8_t getCOUNTER(uint8_t);
-void clearCOUNTER(uint8_t); 
-
 void errorLogging(char*);
 
 #endif
