@@ -2,18 +2,17 @@
 #include "contiki.h"
 #include <stdio.h>
 
-// Other variables
-static uint8_t PROGRESS=0;
-static struct etimer et;
+// Quasi-Global variables
 static volatile int virtualClock;
+static uint8_t PROGRESS=0;
 
 PROCESS(main_process, "Main Task");
 AUTOSTART_PROCESSES(&main_process);
 
 // Logs error or status information to stdout
-void errorLogging(char* str)
+void Logging(char* str)
 {
-	printf("Status Log: %s\r\n",str);
+	printf("TIME - %d : Status Log: %s\r\n",virtualClock/16,str);
 }
 
 // Returns the value of the progress variable
@@ -43,7 +42,7 @@ void setPROGRESS(uint8_t i)
 			PROGRESS |= (1<<3);
 			break;
 		default:
-			errorLogging("ERROR: invalid input to setPROGRESS function");
+			Logging("ERROR: invalid input to set PROGRESS function");
 			break;
 	}
 }
@@ -66,78 +65,117 @@ PROCESS_THREAD(main_process, ev, data)
 	TA1CCTL0 = CCIE;
 
 	// Begin status logging
-	errorLogging("Starting up the system RAD_TEAM");
+	Logging("Starting up the system RAD_TEAM");
 	static int iCnt = 0;
 	static int SentTime = 0;
 
 	//Start receiving
 	rf1a_start_rx();
 
+	// Quasi-global variables used for communicating with the slave
 	static uint8_t oldReceivedMsg[50] = "" ;
 	static uint8_t msg[50];
 
+	// Set all the LED's off
 	P1OUT &= P1OUT & (0<<7);
 	P3OUT &= P3OUT & (0<<6);
 	P3OUT &= P3OUT & (0<<7);
+	// Set all the LED's output direction to output
+	P1DIR |= (1<<7);
+	P3DIR |= (1<<6);
+	P3DIR |= (1<<7);
 	
+	// Set the virtual clock to 0 as you enter the main loop
 	virtualClock = 0;
 	while(1)
 	{
-		
+		// The virtual clock is running at 16Hz, so once every 16 clock ticks print out how many seconds
+		// the program has been running for.
 		if(virtualClock % 16 == 8)
 		{
+			// Print out how long the system has been running
 			char secondCounterStr[50];
 			sprintf(secondCounterStr,"System has been running for %d seconds.",virtualClock/16);
-			errorLogging(secondCounterStr);
+			// Log this using our logging function
+			Logging(secondCounterStr);
+			// Dont need this TODO
 			SentTime = virtualClock;
+
+			// Wait until this if statement is not true 
+			// This stops this block being called twice
 			while(virtualClock % 16 == 8);
 		}
 		
 		if(virtualClock % 48==4)
 		{
-			// Send message 12 characters long to the ID 4
-			char msgSendingThing[50];
-			printf("Requesting Virtual Clock\r\n");
-			sprintf(msgSendingThing,"R%d",virtualClock);
+			// Save the sent time for clock desynchronization later
 			SentTime = virtualClock;
+			
+			// Request the new virtual clock from the slave
+			char msgSendingThing[50];
+			Logging("Requesting Virtual Clock");
+			sprintf(msgSendingThing,"R%d",virtualClock);
 			unicast_send(msgSendingThing,12,4);
 
+			// Wait until this if statement is not true 
+			// This stops this block being called twice
 			while(virtualClock % 48==4);
 		}
 
-		// Call the different processes in tasks.c
+		// If the virtual clock is 0 seconds, or 1 seconds
 		if((virtualClock % 96==0) || (virtualClock % 96==16))
 		{
+			// Toggle LED1
 			process_start(&LED1,NULL);
-			int currentClock = virtualClock;
-			printf("LED 1 Change\r\n");
-			while(currentClock == virtualClock);
+			Logging("LED 1 Change");
+
+			// Wait for the virtual clock to change
+			while(virtualClock%16==0);
 		}
+		// If the virtual clock is 2 seconds, or 3 seconds
 		else if((virtualClock % 96==32) || (virtualClock % 96==48))
 		{
+			// Toggle LED1
 			process_start(&LED2,NULL);
-			int currentClock = virtualClock;
-			printf("LED 2 Change\r\n");
-			while(currentClock == virtualClock);
+			Logging("LED 2 Change");
+			
+			// Wait for the virtual clock to change
+			while(virtualClock%16==0);
 		}
+		// If the virtual clock is 4 seconds, or 5 seconds
 		else if((virtualClock % 96==64) || (virtualClock % 96==80))
 		{
+			// Toggle LED3
 			process_start(&LED3,NULL);
-			int currentClock = virtualClock;
-			printf("LED 3 Change\r\n");
-			while(currentClock == virtualClock);
+			Logging("LED 1 Change");
+			
+			// Wait for the virtual clock to change
+			while(virtualClock%16==0);
 		}
 
+		// Check for new messages
+		// This function was created in contiki by our team
+		// It gets the previous message recieved by the wizzimote and stores it in msg
 		getReceivedMessage(msg);
+
+		// If this message has changed
 		if(strcmp(msg,oldReceivedMsg) != 0)
 		{
+			// Copy this message into the old message variable
+			// This stops the function from being called again
 			strcpy(oldReceivedMsg,msg);
 
-			int InTime = atoi(msg);
-			int difference = ((SentTime + virtualClock) / 2) - InTime;
+			// Convert the previous message into an integer
+			int slaveTime = atoi(msg);
+			// Calculate the difference between the clocks
+			int difference = ((SentTime + virtualClock) / 2) - slaveTime;
 
-			printf("The difference is: %d\r\n", difference);
+			// Log the difference
+			char messageLog[50];
+			sprintf(messageLog,"The difference is: %d\r\n",difference);
+			Logging(messageLog);
 
+			// Send back the difference to the slave, so that the slave can correct this
 			char returnMSG[50];
 			sprintf(returnMSG,"C%d",difference);
 			unicast_send(returnMSG,14,4);
@@ -146,10 +184,11 @@ PROCESS_THREAD(main_process, ev, data)
 	PROCESS_END();
 }
 
+// Interupt handler
+// Timer1 A0 interupt
 #pragma vector = TIMER1_A0_VECTOR
 __interrupt void Timer1A0ISR(void)
 {
 	virtualClock++;
-	//printf("In the interrupt, clock is %d\r\n", virtualClock);
 }
 

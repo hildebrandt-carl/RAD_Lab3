@@ -11,7 +11,6 @@ PROCESS_THREAD(LED1,ev,data)
 	PROCESS_BEGIN();
 	
 	P1OUT ^= (1<<7); // toggle bit 7 in P1OUT (RED LED)
-	P1DIR |= (1<<7); // toggle bit 7 in P1DIR (RED LED)
 		
 	setPROGRESS(1);
 	
@@ -25,7 +24,6 @@ PROCESS_THREAD(LED2,ev,data)
 	PROCESS_BEGIN();
 
 	P3OUT ^= (1<<7); // toggle bit 7 in P3OUT (YELLOW LED)
-	P3DIR |= (1<<7); // toggle bit 7 in P3DIR (YELLOW LED)
 
 	setPROGRESS(2);
 
@@ -39,7 +37,6 @@ PROCESS_THREAD(LED3,ev,data)
 	PROCESS_BEGIN();
 
 	P3OUT ^= (1<<6); // toggle bit 6 in P3OUT (GREEN LED)
-	P3DIR |= (1<<6); // set bit 6 in P3DIR (GREEN LED)
 
 	setPROGRESS(3);			
 
@@ -56,7 +53,7 @@ PROCESS_THREAD(WDTCHECK,ev,data)
 	if((p & 0x0E) == 0x0E)
 	{
 		clearPROGRESS();
-		errorLogging("Watchdog being kicked");
+		Logging("Watchdog being kicked");
 		WDTCTL = (WDTCTL & 0xFF) + WDTPW + WDTCNTCL; // kick watchdog
 	}
 

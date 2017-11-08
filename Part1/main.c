@@ -30,13 +30,18 @@ PROCESS_THREAD(main_process, ev, data)
  	P2MAP3 = PM_SMCLK;
 
 	PMAPCTL |= PMAPRECFG; // set configuration
-  	PMAPPWD = 0x00; // lock configuration
+	PMAPPWD = 0x00; // lock configuration
+	  
+	
 	
 	while(1)
 	{
  		// Delay 1 second - start the event timer and set its event period to 1 second
 		etimer_set(&et, 1*CLOCK_SECOND);
 		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+
+		P1OUT ^= (1<<7); // toggle bit 7 in P1OUT (RED LED)
+		P1DIR |= (1<<7); // toggle bit 7 in P1DIR (RED LED)
 
 		// Kick the watchdog
 		WDTCTL = (WDTCTL & 0xFF) + WDTPW + WDTCNTCL; // kick watchdog	
